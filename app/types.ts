@@ -1,7 +1,8 @@
 export interface Team {
   id: number;
   name: string;
-  score: number;
+  score: number; // Tournament Points (10, 7.5, 5, 3)
+  matchScore: number; // Raw Match Score (seconds/points)
 }
 
 export interface Match {

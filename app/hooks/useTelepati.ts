@@ -7,6 +7,7 @@ const initialTeams: Team[] = Array.from({ length: 8 }, (_, i) => ({
   id: i + 1,
   name: `Kelompok ${i + 1}`,
   score: 0,
+  matchScore: 0,
 }));
 
 const initialMatches: Match[] = [
@@ -50,16 +51,40 @@ export function useTelepati() {
       });
 
       const newTeams = prev.teams.map(t => {
-        let totalScore = 0;
+        let totalMatchScore = 0;
         newMatches.forEach(m => {
           if (m.scores[t.id] !== undefined) {
-            totalScore += m.scores[t.id];
+            totalMatchScore += m.scores[t.id];
           }
         });
-        return { ...t, score: totalScore };
+        return { ...t, matchScore: totalMatchScore };
       });
 
-      return { ...prev, matches: newMatches, teams: newTeams };
+      // Hitung Poin Turnamen (10, 7.5, 5, 3) berdasarkan ranking matchScore
+      // Urutkan tim berdasarkan matchScore tertinggi
+      const sortedByScore = [...newTeams].sort((a, b) => (b.matchScore || 0) - (a.matchScore || 0));
+      
+      const teamsWithPoints = newTeams.map(t => {
+        let tournamentPoints = 0;
+        const rank = sortedByScore.findIndex(s => s.id === t.id) + 1;
+        const hasScore = (t.matchScore || 0) > 0;
+
+        if (hasScore) {
+          if (rank === 1) tournamentPoints = 10;
+          else if (rank === 2) tournamentPoints = 7.5;
+          else if (rank === 3) tournamentPoints = 5;
+          else tournamentPoints = 3;
+        } else {
+          // Jika belum ada skor, poin tetap 0 atau 3? 
+          // Di useRankedGame defaultnya 3. Kita ikuti saja agar konsisten jika sudah mulai input.
+          // Tapi kalau benar-benar 0 skornya (belum main), mungkin lebih baik 0.
+          tournamentPoints = 0;
+        }
+
+        return { ...t, score: tournamentPoints };
+      });
+
+      return { ...prev, matches: newMatches, teams: teamsWithPoints };
     });
   };
 
@@ -82,22 +107,44 @@ export function useTelepati() {
       });
 
       const newTeams = prev.teams.map(t => {
-        let totalScore = 0;
+        let totalMatchScore = 0;
         newMatches.forEach(m => {
           if (m.scores[t.id] !== undefined) {
-            totalScore += m.scores[t.id];
+            totalMatchScore += m.scores[t.id];
           }
         });
-        return { ...t, score: totalScore };
+        return { ...t, matchScore: totalMatchScore };
       });
 
-      return { ...prev, matches: newMatches, teams: newTeams };
+      // Hitung Poin Turnamen (10, 7.5, 5, 3) berdasarkan ranking matchScore
+      const sortedByScore = [...newTeams].sort((a, b) => (b.matchScore || 0) - (a.matchScore || 0));
+      
+      const teamsWithPoints = newTeams.map(t => {
+        let tournamentPoints = 0;
+        const rank = sortedByScore.findIndex(s => s.id === t.id) + 1;
+        const hasScore = (t.matchScore || 0) > 0;
+
+        if (hasScore) {
+          if (rank === 1) tournamentPoints = 10;
+          else if (rank === 2) tournamentPoints = 7.5;
+          else if (rank === 3) tournamentPoints = 5;
+          else tournamentPoints = 3;
+        } else {
+          tournamentPoints = 0;
+        }
+
+        return { ...t, score: tournamentPoints };
+      });
+
+      return { ...prev, matches: newMatches, teams: teamsWithPoints };
     });
   };
 
   const resetData = () => {
     if (confirm('Apakah Anda yakin ingin mereset semua data Telepati Games?')) {
-      setData({ teams: initialTeams, matches: initialMatches });
+      const resetState = { teams: initialTeams, matches: initialMatches };
+      setData(resetState);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(resetState));
     }
   };
 

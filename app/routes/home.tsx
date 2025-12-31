@@ -8,6 +8,54 @@ export function meta() {
 }
 
 export default function Home() {
+  const games = [
+    {
+      id: "puzzle",
+      title: "Puzzle Battle",
+      description: "Adu cepat menyusun kepingan puzzle menjadi gambar utuh.",
+      icon: "🧩",
+      to: "/penyisihan",
+      color: "bg-blue-600",
+      shadow: "shadow-blue-200"
+    },
+    {
+      id: "telepati",
+      title: "Telepati Games",
+      description: "Uji kekompakan dan intuisi antar anggota kelompok.",
+      icon: "🧠",
+      to: "/telepati",
+      color: "bg-green-600",
+      shadow: "shadow-green-200"
+    },
+    {
+      id: "color",
+      title: "Color Battle",
+      description: "Permainan ketangkasan warna dan strategi kelompok.",
+      icon: "🎨",
+      to: "/color-battle",
+      color: "bg-yellow-500",
+      shadow: "shadow-yellow-200"
+    },
+    {
+      id: "berantai",
+      title: "Games Berantai",
+      description: "Estafet pesan dan gerakan dalam satu barisan.",
+      icon: "🔗",
+      to: "/games-berantai",
+      color: "bg-red-600",
+      shadow: "shadow-red-200"
+    },
+    {
+      id: "rekap",
+      title: "Rekapan Akhir",
+      description: "Klasemen keseluruhan dari semua perlombaan.",
+      icon: "🏆",
+      to: "/rekap-akhir",
+      color: "bg-gray-900",
+      shadow: "shadow-gray-300"
+    }
+  ];
+
   return (
     <div className="max-w-6xl mx-auto px-4 py-16">
       <div className="text-center mb-16">
@@ -22,44 +70,26 @@ export default function Home() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
-        {/* Puzzle Battle Choice */}
-        <div className="relative group bg-white rounded-3xl shadow-xl border-2 border-transparent hover:border-blue-500 transition-all p-8 flex flex-col items-center text-center">
-          <div className="w-24 h-24 bg-blue-100 rounded-2xl flex items-center justify-center text-5xl mb-6 transform group-hover:scale-110 transition-transform">
-            🧩
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+        {games.map((game) => (
+          <div key={game.id} className="relative group bg-white rounded-3xl shadow-xl border-2 border-transparent hover:border-blue-500 transition-all p-8 flex flex-col items-center text-center">
+            <div className={`w-24 h-24 ${game.color.replace('bg-', 'bg-opacity-10 ').replace('600', '100').replace('500', '100').replace('900', '100')} bg-current rounded-2xl flex items-center justify-center text-5xl mb-6 transform group-hover:scale-110 transition-transform`}>
+              <span className="opacity-100">{game.icon}</span>
+            </div>
+            <h2 className="text-3xl font-black text-gray-900 mb-4">{game.title}</h2>
+            <p className="text-gray-600 mb-8 flex-grow">
+              {game.description}
+            </p>
+            <div className="grid grid-cols-1 gap-3 w-full">
+              <Link 
+                to={game.to}
+                className={`${game.color} hover:opacity-90 text-white font-bold py-3 px-6 rounded-xl transition-colors shadow-lg ${game.shadow}`}
+              >
+                Masuk Arena
+              </Link>
+            </div>
           </div>
-          <h2 className="text-3xl font-black text-blue-900 mb-4">Puzzle Battle</h2>
-          <p className="text-gray-600 mb-8 flex-grow">
-            Game menyusun posisi puzzle dengan cepat. Terdiri dari babak penyisihan 9 kelompok dan babak final 3 besar.
-          </p>
-          <div className="grid grid-cols-1 gap-3 w-full">
-            <Link 
-              to="/penyisihan"
-              className="bg-blue-700 hover:bg-blue-800 text-white font-bold py-3 px-6 rounded-xl transition-colors shadow-lg shadow-blue-200"
-            >
-              Masuk Arena
-            </Link>
-          </div>
-        </div>
-
-        {/* Telepati Games Choice */}
-        <div className="relative group bg-white rounded-3xl shadow-xl border-2 border-transparent hover:border-green-500 transition-all p-8 flex flex-col items-center text-center">
-          <div className="w-24 h-24 bg-green-100 rounded-2xl flex items-center justify-center text-5xl mb-6 transform group-hover:scale-110 transition-transform">
-            🤝
-          </div>
-          <h2 className="text-3xl font-black text-green-900 mb-4">Telepati Games</h2>
-          <p className="text-gray-600 mb-8 flex-grow">
-            Game kesamaan gerakan antar anggota kelompok. Terdiri dari 8 kelompok yang dibagi menjadi 4 pertandingan head-to-head.
-          </p>
-          <div className="grid grid-cols-1 gap-3 w-full">
-            <Link 
-              to="/telepati"
-              className="bg-green-700 hover:bg-green-800 text-white font-bold py-3 px-6 rounded-xl transition-colors shadow-lg shadow-green-200"
-            >
-              Masuk Arena
-            </Link>
-          </div>
-        </div>
+        ))}
       </div>
 
       {/* <div className="mt-20 pt-8 border-t border-gray-200">

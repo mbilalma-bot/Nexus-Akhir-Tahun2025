@@ -21,37 +21,31 @@ export default function Rekap() {
       </header>
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-12">
-        <div className="space-y-6">
-          <h2 className="text-2xl font-black text-blue-900 flex items-center gap-3 uppercase tracking-tight">
-            <span className="bg-blue-900 text-white p-2 rounded-xl shadow-lg">🏆</span> 
-            Klasemen
-          </h2>
-          <TeamTable teams={data.teams} />
-        </div>
-        
-        <div className="space-y-6">
-          <h2 className="text-2xl font-black text-blue-900 flex items-center gap-3 uppercase tracking-tight">
-            <span className="bg-blue-900 text-white p-2 rounded-xl shadow-lg">📈</span> 
-            Statistik Poin
-          </h2>
-          <ScoreChart teams={data.teams} />
-        </div>
-      </div>
+         <div className="space-y-6">
+           <h2 className="text-2xl font-black text-blue-900 flex items-center gap-3 uppercase tracking-tight">
+             <span className="bg-blue-900 text-white p-2 rounded-xl shadow-lg">🏆</span> 
+             Klasemen Akhir
+           </h2>
+           <TeamTable teams={data.teams} scoreKey="matchScore" showTournamentPoints={true} hideScore={true} />
+         </div>
+
+         <div className="space-y-6">
+           <h2 className="text-2xl font-black text-blue-900 flex items-center gap-3 uppercase tracking-tight">
+             <span className="bg-blue-900 text-white p-2 rounded-xl shadow-lg">📊</span> 
+             Visualisasi Poin
+           </h2>
+           <ScoreChart teams={data.teams} scoreKey="score" maxY={10} />
+         </div>
+       </div>
 
       <div className="bg-blue-900 text-white p-10 rounded-[3rem] shadow-2xl relative overflow-hidden border-8 border-blue-800">
         <div className="relative z-10">
           <h2 className="text-3xl font-black mb-10 italic tracking-widest uppercase border-b border-blue-700 pb-4 inline-block">Status Games</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
             <div className="bg-white/5 p-8 rounded-3xl backdrop-blur-md border border-white/10 hover:bg-white/10 transition-colors">
-              <div className="text-blue-300 text-xs font-black uppercase mb-4 tracking-widest">Poin Keseluruhan Games</div>
-              <div className="text-6xl font-black text-white tabular-nums">
-                {data.teams.reduce((acc, t) => acc + t.score, 0).toLocaleString()}
-              </div>
-            </div>
-            <div className="bg-white/5 p-8 rounded-3xl backdrop-blur-md border border-white/10 hover:bg-white/10 transition-colors">
-              <div className="text-blue-300 text-xs font-black uppercase mb-4 tracking-widest">Peroleh Poin Tertinggi</div>
+              <div className="text-blue-300 text-xs font-black uppercase mb-4 tracking-widest">Peringkat Tertinggi</div>
               <div className="text-4xl font-black text-yellow-400 truncate uppercase italic">
-                {[...data.teams].sort((a, b) => b.score - a.score)[0]?.name || '-'}
+                {[...data.teams].sort((a, b) => (b.score || 0) - (a.score || 0))[0]?.name || '-'}
               </div>
             </div>
             <div className="bg-white/5 p-8 rounded-3xl backdrop-blur-md border border-white/10 hover:bg-white/10 transition-colors">

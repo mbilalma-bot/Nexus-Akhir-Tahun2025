@@ -28,32 +28,80 @@ export const links: Route.LinksFunction = () => [
 export function Layout({ children }: { children: React.ReactNode }) {
   const location = useLocation();
   const isTelepati = location.pathname.startsWith('/telepati');
+  const isColor = location.pathname.startsWith('/color-battle');
+  const isBerantai = location.pathname.startsWith('/games-berantai');
+  const isRekapAkhir = location.pathname.startsWith('/rekap-akhir');
   const isHome = location.pathname === '/';
 
-  const navItems = isTelepati 
-    ? [
-        { to: "/telepati", label: "Games" },
-        { to: "/telepati/rekap", label: "Rekap Poin" },
-      ]
-    : [
-        { to: "/penyisihan", label: "Babak Penyisihan" },
-        { to: "/final", label: "Babak Final" },
-        { to: "/rekap", label: "Rekap Poin" },
-      ];
+  let navItems: { to: string; label: string }[] = [];
+  let themeClass = "bg-blue-900";
+  let activeClass = "text-blue-900";
+  let hoverClass = "hover:bg-blue-800";
+  let borderClass = "border-blue-800";
+  let logoText = "PB";
+  let gameTitle = "PUZZLE BATTLE";
 
-  const themeClass = isTelepati ? "bg-green-900" : "bg-blue-900";
-  const activeClass = isTelepati ? "text-green-900" : "text-blue-900";
-  const hoverClass = isTelepati ? "hover:bg-green-800" : "hover:bg-blue-800";
-  const borderClass = isTelepati ? "border-green-800" : "border-blue-800";
-  const logoText = isTelepati ? "TG" : "PB";
-  const gameTitle = isTelepati ? "TELEPATI GAMES" : "PUZZLE BATTLE";
+  if (isTelepati) {
+    navItems = [
+      { to: "/telepati", label: "Games" },
+      { to: "/telepati/rekap", label: "Rekap Poin" },
+    ];
+    themeClass = "bg-green-900";
+    activeClass = "text-green-900";
+    hoverClass = "hover:bg-green-800";
+    borderClass = "border-green-800";
+    logoText = "TG";
+    gameTitle = "TELEPATI GAMES";
+  } else if (isColor) {
+    navItems = [
+      { to: "/color-battle", label: "Arena Input" },
+    ];
+    themeClass = "bg-yellow-600";
+    activeClass = "text-yellow-600";
+    hoverClass = "hover:bg-yellow-500";
+    borderClass = "border-yellow-500";
+    logoText = "CB";
+    gameTitle = "COLOR BATTLE";
+  } else if (isBerantai) {
+    navItems = [
+      { to: "/games-berantai", label: "Arena Input" },
+    ];
+    themeClass = "bg-red-900";
+    activeClass = "text-red-900";
+    hoverClass = "hover:bg-red-800";
+    borderClass = "border-red-800";
+    logoText = "GB";
+    gameTitle = "GAMES BERANTAI";
+  } else if (isRekapAkhir) {
+    navItems = [
+      { to: "/rekap-akhir", label: "Klasemen Akhir" },
+    ];
+    themeClass = "bg-indigo-900";
+    activeClass = "text-indigo-900";
+    hoverClass = "hover:bg-indigo-800";
+    borderClass = "border-indigo-800";
+    logoText = "RA";
+    gameTitle = "REKAPAN AKHIR";
+  } else {
+    navItems = [
+      { to: "/penyisihan", label: "Babak Penyisihan" },
+      { to: "/final", label: "Babak Final" },
+      { to: "/rekap", label: "Rekap Poin" },
+    ];
+    themeClass = "bg-blue-900";
+    activeClass = "text-blue-900";
+    hoverClass = "hover:bg-blue-800";
+    borderClass = "border-blue-800";
+    logoText = "PB";
+    gameTitle = "PUZZLE BATTLE";
+  }
 
   return (
     <html lang="id">
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>{isTelepati ? 'Telepati Games' : 'Puzzle Battle'} - MM Desa Cicalengka</title>
+        <title>{gameTitle.split(' ').map(w => w[0].toUpperCase() + w.slice(1).toLowerCase()).join(' ')} - MM Desa Cicalengka</title>
         <Meta />
         <Links />
       </head>

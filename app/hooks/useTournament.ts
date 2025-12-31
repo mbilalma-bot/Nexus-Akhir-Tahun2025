@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import type { Team, Match, TournamentData } from '../types';
 
-const STORAGE_KEY = 'puzzle_battle_data';
+const STORAGE_KEY = 'tournament_data';
 
 const initialTeams: Team[] = Array.from({ length: 9 }, (_, i) => ({
   id: i + 1,
   name: `Kelompok ${i + 1}`,
   score: 0,
+  matchScore: 0,
 }));
 
 const initialMatches: Match[] = [
@@ -33,9 +34,63 @@ export function useTournament() {
     }));
   };
 
+  const calculateFinalPoints = (teams: Team[], matches: Match[]) => {
+    // 1. Identifikasi Babak Final
+    const finalMatch = matches.find(m => m.phase === 'final');
+    const finalScores = finalMatch ? Object.values(finalMatch.scores) : [];
+    const isFinalDone = finalMatch && finalScores.length > 0 && finalScores.every(s => s > 0);
+
+    // 2. Hitung Match Score (Raw) - JANGAN DIKUMULASIKAN
+    // Jika tim masuk final, matchScore = skor final
+    // Jika tidak masuk final, matchScore = skor penyisihan
+    const updatedTeams = teams.map(t => {
+      let penyisihanScore = 0;
+      let finalScore = 0;
+
+      matches.forEach(m => {
+        if (m.phase === 'penyisihan' && m.scores[t.id] !== undefined) {
+          penyisihanScore += m.scores[t.id];
+        }
+        if (m.phase === 'final' && m.scores[t.id] !== undefined) {
+          finalScore += m.scores[t.id];
+        }
+      });
+
+      const isFinalist = finalMatch?.participants.includes(t.id);
+      const displayMatchScore = isFinalist ? finalScore : penyisihanScore;
+
+      return { ...t, matchScore: displayMatchScore };
+    });
+
+    // 3. Hitung Tournament Points (10, 7.5, 5, 3)
+    // HANYA diberikan setelah FINAL SELESAI
+    return updatedTeams.map(team => {
+      let tournamentPoints = 0;
+
+      if (isFinalDone && finalMatch) {
+        if (finalMatch.participants.includes(team.id)) {
+          // Finalis: Urutkan berdasarkan skor di babak FINAL saja
+          const finalists = finalMatch.participants.map(id => ({
+            id,
+            score: finalMatch.scores[id] || 0
+          })).sort((a, b) => b.score - a.score);
+
+          const rank = finalists.findIndex(f => f.id === team.id) + 1;
+          if (rank === 1) tournamentPoints = 10;
+          else if (rank === 2) tournamentPoints = 7.5;
+          else if (rank === 3) tournamentPoints = 5;
+        } else {
+          // Juara 4-9 (Non-Finalis): 3 poin
+          tournamentPoints = 3;
+        }
+      }
+
+      return { ...team, score: tournamentPoints };
+    });
+  };
+
   const addScore = (phase: 'penyisihan' | 'final', matchIndex: number, teamId: number, additionalScore: number) => {
     setData((prev) => {
-      // Temukan index absolut di dalam array matches asli
       let currentMatchCount = 0;
       const newMatches = prev.matches.map((match) => {
         if (match.phase === phase) {
@@ -54,16 +109,8 @@ export function useTournament() {
         return match;
       });
 
-      // Update total team score berdasarkan matches yang baru
-      const newTeams = prev.teams.map(t => {
-        let totalScore = 0;
-        newMatches.forEach(m => {
-          if (m.scores[t.id] !== undefined) {
-            totalScore += m.scores[t.id];
-          }
-        });
-        return { ...t, score: totalScore };
-      });
+      // Update total team score berdasarkan PERINGKAT (Bukan akumulasi murni)
+      const newTeams = calculateFinalPoints(prev.teams, newMatches);
 
       return { ...prev, matches: newMatches, teams: newTeams };
     });
@@ -92,15 +139,7 @@ export function useTournament() {
         return match;
       });
 
-      const newTeams = prev.teams.map(t => {
-        let totalScore = 0;
-        newMatches.forEach(m => {
-          if (m.scores[t.id] !== undefined) {
-            totalScore += m.scores[t.id];
-          }
-        });
-        return { ...t, score: totalScore };
-      });
+      const newTeams = calculateFinalPoints(prev.teams, newMatches);
 
       return { ...prev, matches: newMatches, teams: newTeams };
     });

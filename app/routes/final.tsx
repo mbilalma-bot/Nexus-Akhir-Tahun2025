@@ -1,3 +1,4 @@
+import { Link } from "react-router";
 import { useTournament } from "../hooks/useTournament";
 import { ScoreInput } from "../components/ScoreInput";
 
@@ -5,6 +6,9 @@ export default function Final() {
   const { data, addScore, updateTeamName, setupFinal, resetMatchScore } = useTournament();
   
   const finalMatch = data.matches.find(m => m.phase === 'final');
+  const finalScores = finalMatch ? Object.values(finalMatch.scores) : [];
+  const isFinalDone = finalScores.length > 0 && finalScores.every(s => s > 0);
+  
   const penyisihanDone = data.matches.filter(m => m.phase === 'penyisihan').every(m => 
     Object.values(m.scores).some(s => s > 0)
   );
@@ -49,7 +53,7 @@ export default function Final() {
 
           <div className="flex flex-col md:flex-row gap-6">
             {finalMatch.participants.map(teamId => {
-              const team = data.teams.find(t => t.id === teamId)!;
+              const team = data.teams.find(t => t.id === teamId) || { id: teamId, name: `Kelompok ${teamId}`, score: 0, matchScore: 0 };
               return (
                 <ScoreInput
                   key={teamId}
@@ -64,7 +68,7 @@ export default function Final() {
           {/* Large Live Scoreboard */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-8">
             {finalMatch.participants.map(teamId => {
-              const team = data.teams.find(t => t.id === teamId)!;
+              const team = data.teams.find(t => t.id === teamId) || { id: teamId, name: `Kelompok ${teamId}`, score: 0, matchScore: 0 };
               const matchScore = finalMatch.scores[teamId] || 0;
               return (
                 <div key={teamId} className="bg-yellow-50 rounded-3xl p-8 text-center shadow-2xl border-4 border-yellow-400 relative overflow-hidden group">
@@ -80,6 +84,23 @@ export default function Final() {
               );
             })}
           </div>
+
+          {isFinalDone && (
+            <div className="bg-blue-900 rounded-[3rem] p-12 text-center shadow-2xl border-8 border-blue-800 animate-in fade-in zoom-in duration-700">
+              <h3 className="text-white text-4xl font-black italic mb-6 uppercase tracking-tighter">
+                🎊 PUZZLE BATTLE <span className="text-yellow-400">SELESAI!</span> 🎊
+              </h3>
+              <p className="text-blue-200 text-lg mb-8 max-w-2xl mx-auto">
+                Poin turnamen telah dikalkulasi dan sudah masuk ke dalam rekapan akhir keseluruhan games.
+              </p>
+              <Link 
+                to="/rekap-akhir"
+                className="inline-block bg-yellow-500 hover:bg-yellow-600 text-white font-black px-12 py-4 rounded-2xl shadow-xl transition-all hover:-translate-y-1 active:scale-95 text-xl uppercase tracking-widest"
+              >
+                Lihat Klasemen Akhir 🏆
+              </Link>
+            </div>
+          )}
           
           <div className="text-center pt-8">
             <button

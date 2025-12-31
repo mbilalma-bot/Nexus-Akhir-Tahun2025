@@ -9,7 +9,7 @@ export function meta() {
 }
 
 export default function TelepatiGames() {
-  const { data, addScore, updateTeamName, resetMatchScore } = useTelepati();
+  const { data, addScore, updateTeamName, resetMatchScore, resetData } = useTelepati();
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
@@ -93,12 +93,7 @@ export default function TelepatiGames() {
       <div className="mt-20 p-8 bg-green-50 rounded-3xl border-2 border-green-100 text-center">
         <p className="text-green-800 font-bold mb-4">Butuh memulai ulang semua data Telepati Games?</p>
         <button 
-          onClick={() => {
-            if(confirm('Hapus semua data skor Telepati Games?')) {
-              localStorage.removeItem('telepati_games_data');
-              window.location.reload();
-            }
-          }}
+          onClick={resetData}
           className="bg-red-100 hover:bg-red-200 text-red-600 px-6 py-2 rounded-xl font-bold transition-colors border border-red-200"
         >
           Reset Seluruh Data Games

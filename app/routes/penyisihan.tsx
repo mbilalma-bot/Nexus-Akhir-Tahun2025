@@ -27,7 +27,7 @@ export default function Penyisihan() {
           {/* Horizontal Inputs */}
           <div className="flex flex-col md:flex-row gap-4 mb-8">
             {match.participants.map(teamId => {
-              const team = data.teams.find(t => t.id === teamId)!;
+              const team = data.teams.find(t => t.id === teamId) || { id: teamId, name: `Kelompok ${teamId}`, score: 0, matchScore: 0 };
               return (
                 <ScoreInput
                   key={teamId}
@@ -42,7 +42,7 @@ export default function Penyisihan() {
           {/* Live Scoreboard for this match */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {match.participants.map(teamId => {
-              const team = data.teams.find(t => t.id === teamId)!;
+              const team = data.teams.find(t => t.id === teamId) || { id: teamId, name: `Kelompok ${teamId}`, score: 0, matchScore: 0 };
               const matchScore = match.scores[teamId] || 0;
               return (
                 <div key={teamId} className="bg-blue-50 rounded-2xl p-6 text-center shadow-2xl border-4 border-blue-800 transform transition-transform hover:scale-105">
@@ -64,7 +64,7 @@ export default function Penyisihan() {
       ))}
 
       {/* Global Mini Scoreboard */}
-      <div className="mt-20 p-8 bg-white rounded-3xl shadow-2xl border-2 border-blue-100">
+      {/* <div className="mt-20 p-8 bg-white rounded-3xl shadow-2xl border-2 border-blue-100">
         <h3 className="text-xl font-black text-blue-900 mb-6 flex items-center gap-2">
           <span className="bg-blue-600 text-white p-2 rounded-lg">📊</span>
           TOTAL POIN KESELURUHAN
@@ -77,7 +77,7 @@ export default function Penyisihan() {
             </div>
           ))}
         </div>
-      </div>
+      </div> */}
     </div>
   );
 }
