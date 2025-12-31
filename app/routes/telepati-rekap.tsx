@@ -53,6 +53,7 @@ export default function TelepatiRekap() {
             color="#16a34a" 
             titleColor="#14532d"
             maxY={40}
+            stepSize={10}
           />
         </div>
       </div>

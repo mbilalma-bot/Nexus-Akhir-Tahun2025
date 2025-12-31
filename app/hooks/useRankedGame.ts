@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import type { Team, TournamentData } from '../types';
+import { useTeamMaster } from './useTeamMaster';
 
 const getInitialTeams = (length: number) => Array.from({ length }, (_, i) => ({
   id: i + 1,
@@ -9,12 +10,24 @@ const getInitialTeams = (length: number) => Array.from({ length }, (_, i) => ({
 }));
 
 export function useRankedGame(storageKey: string, teamCount: number = 9) {
+  const { teams: masterTeams } = useTeamMaster();
   const [data, setData] = useState<TournamentData>(() => {
     if (typeof window === 'undefined') return { teams: getInitialTeams(teamCount), matches: [] };
     const saved = localStorage.getItem(storageKey);
     // Kita simpan ranking di matches.scores sebagai { rank: teamId }
     return saved ? JSON.parse(saved) : { teams: getInitialTeams(teamCount), matches: [{ phase: 'penyisihan', participants: Array.from({length: teamCount}, (_, i) => i + 1), scores: {} }] };
   });
+
+  // Sinkronisasi nama kelompok dari Master Data
+  useEffect(() => {
+    setData(prev => ({
+      ...prev,
+      teams: prev.teams.map(t => {
+        const masterTeam = masterTeams.find(mt => mt.id === t.id);
+        return masterTeam ? { ...t, name: masterTeam.name } : t;
+      })
+    }));
+  }, [masterTeams]);
 
   useEffect(() => {
     localStorage.setItem(storageKey, JSON.stringify(data));

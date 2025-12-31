@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import type { TournamentData } from "../types";
+import { useTeamMaster } from "../hooks/useTeamMaster";
 
 export function meta() {
   return [
@@ -19,6 +20,7 @@ interface TeamScore {
 }
 
 export default function RekapAkhir() {
+  const { teams: masterTeams } = useTeamMaster();
   const [rekap, setRekap] = useState<TeamScore[]>([]);
 
   useEffect(() => {
@@ -27,11 +29,9 @@ export default function RekapAkhir() {
     const colorData: TournamentData = JSON.parse(localStorage.getItem('color_battle_data') || '{"teams": []}');
     const berantaiData: TournamentData = JSON.parse(localStorage.getItem('games_berantai_data') || '{"teams": []}');
 
-    // Ambil semua tim unik (terutama Kelompok 9 dari Puzzle)
-    const allTeamNames = ["Kelompok 1", "Kelompok 2", "Kelompok 3", "Kelompok 4", "Kelompok 5", "Kelompok 6", "Kelompok 7", "Kelompok 8", "Kelompok 9"];
-    
-    const combined: TeamScore[] = allTeamNames.map((name, index) => {
-      const id = index + 1;
+    const combined: TeamScore[] = masterTeams.map((masterTeam) => {
+      const id = masterTeam.id;
+      const name = masterTeam.name;
       const p = puzzleData.teams.find(t => t.id === id)?.score || 0;
       const t = telepatiData.teams.find(t => t.id === id)?.score || 0;
       const c = colorData.teams.find(t => t.id === id)?.score || 0;
@@ -49,7 +49,7 @@ export default function RekapAkhir() {
     });
 
     setRekap(combined);
-  }, []);
+  }, [masterTeams]);
 
   const sortedRekap = [...rekap].sort((a, b) => b.total - a.total);
 

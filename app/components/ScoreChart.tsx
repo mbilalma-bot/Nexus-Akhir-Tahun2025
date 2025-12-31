@@ -26,6 +26,7 @@ interface ScoreChartProps {
   color?: string;
   titleColor?: string;
   maxY?: number;
+  stepSize?: number;
   scoreKey?: 'score' | 'matchScore';
   title?: string;
 }
@@ -35,6 +36,7 @@ export function ScoreChart({
   color = '#1e3a8a', 
   titleColor = '#1e3a8a',
   maxY = 10,
+  stepSize = 1,
   scoreKey = 'score',
   title = 'Visualisasi Poin Akhir'
 }: ScoreChartProps) {
@@ -88,7 +90,7 @@ export function ScoreChart({
       },
       datalabels: {
         display: true,
-        color: '#1e3a8a',
+        color: color,
         align: 'top' as const,
         anchor: 'end' as const,
         offset: 4,
@@ -106,8 +108,8 @@ export function ScoreChart({
         max: maxY,
         title: {
           display: true,
-          text: 'Poin Turnamen',
-          color: '#1e3a8a',
+          text: 'Total Poin',
+          color: color,
           font: {
             size: 14,
             weight: 'bold' as const,
@@ -115,11 +117,11 @@ export function ScoreChart({
           }
         },
         grid: {
-          color: 'rgba(30, 58, 138, 0.1)',
+          color: `${color}1A`, // Adding 10% opacity
         },
         ticks: {
-          stepSize: 1,
-          color: '#1e3a8a',
+          stepSize: stepSize,
+          color: color,
           font: {
             weight: 'bold' as const,
           },
@@ -129,7 +131,7 @@ export function ScoreChart({
         title: {
           display: true,
           text: 'Daftar Kelompok',
-          color: '#1e3a8a',
+          color: color,
           font: {
             size: 14,
             weight: 'bold' as const,
@@ -140,7 +142,7 @@ export function ScoreChart({
           display: false,
         },
         ticks: {
-          color: '#1e3a8a',
+          color: color,
           font: {
             weight: 'black' as const,
             size: 12,

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import type { Team, Match, TournamentData } from '../types';
+import { useTeamMaster } from './useTeamMaster';
 
 const STORAGE_KEY = 'tournament_data';
 
@@ -17,17 +18,31 @@ const initialMatches: Match[] = [
 ];
 
 export function useTournament() {
+  const { teams: masterTeams } = useTeamMaster();
   const [data, setData] = useState<TournamentData>(() => {
     if (typeof window === 'undefined') return { teams: initialTeams, matches: initialMatches };
     const saved = localStorage.getItem(STORAGE_KEY);
     return saved ? JSON.parse(saved) : { teams: initialTeams, matches: initialMatches };
   });
 
+  // Sinkronisasi nama kelompok dari Master Data
+  useEffect(() => {
+    setData(prev => ({
+      ...prev,
+      teams: prev.teams.map(t => {
+        const masterTeam = masterTeams.find(mt => mt.id === t.id);
+        return masterTeam ? { ...t, name: masterTeam.name } : t;
+      })
+    }));
+  }, [masterTeams]);
+
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
   }, [data]);
 
   const updateTeamName = (id: number, name: string) => {
+    // Fungsi ini sekarang hanya update local state, 
+    // tapi idealnya semua edit lewat useTeamMaster di halaman home
     setData((prev) => ({
       ...prev,
       teams: prev.teams.map((t) => (t.id === id ? { ...t, name } : t)),
@@ -145,6 +160,39 @@ export function useTournament() {
     });
   };
 
+  const updateMatchParticipant = (phase: 'penyisihan' | 'final', matchIndex: number, participantIndex: number, newTeamId: number) => {
+    setData((prev) => {
+      let currentMatchCount = 0;
+      const newMatches = prev.matches.map((match) => {
+        if (match.phase === phase) {
+          if (currentMatchCount === matchIndex) {
+            currentMatchCount++;
+            const oldTeamId = match.participants[participantIndex];
+            const newParticipants = [...match.participants];
+            newParticipants[participantIndex] = newTeamId;
+            
+            // Move score to new team id and delete old one if changed
+            const newScores = { ...match.scores };
+            if (oldTeamId !== newTeamId) {
+              newScores[newTeamId] = newScores[oldTeamId] || 0;
+              // Only delete if the old team is no longer in the match
+              if (!newParticipants.includes(oldTeamId)) {
+                delete newScores[oldTeamId];
+              }
+            }
+            
+            return { ...match, participants: newParticipants, scores: newScores };
+          }
+          currentMatchCount++;
+        }
+        return match;
+      });
+
+      const newTeams = calculateFinalPoints(prev.teams, newMatches);
+      return { ...prev, matches: newMatches, teams: newTeams };
+    });
+  };
+
   const getWinners = (phase: 'penyisihan') => {
     const phaseMatches = data.matches.filter(m => m.phase === phase);
     return phaseMatches.map(m => {
@@ -201,6 +249,7 @@ export function useTournament() {
     updateTeamName,
     addScore,
     resetMatchScore,
+    updateMatchParticipant,
     resetData,
     getWinners,
     setupFinal

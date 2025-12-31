@@ -2,7 +2,7 @@ import { useTournament } from "../hooks/useTournament";
 import { ScoreInput } from "../components/ScoreInput";
 
 export default function Penyisihan() {
-  const { data, addScore, updateTeamName, resetMatchScore } = useTournament();
+  const { data, addScore, updateTeamName, updateMatchParticipant, resetMatchScore } = useTournament();
   const penyisihanMatches = data.matches.filter(m => m.phase === 'penyisihan');
 
   return (
@@ -26,14 +26,16 @@ export default function Penyisihan() {
 
           {/* Horizontal Inputs */}
           <div className="flex flex-col md:flex-row gap-4 mb-8">
-            {match.participants.map(teamId => {
+            {match.participants.map((teamId, pIdx) => {
               const team = data.teams.find(t => t.id === teamId) || { id: teamId, name: `Kelompok ${teamId}`, score: 0, matchScore: 0 };
               return (
                 <ScoreInput
-                  key={teamId}
+                  key={`${matchIdx}-${pIdx}`}
                   team={team}
+                  allTeams={data.teams}
                   onSave={(score) => addScore('penyisihan', matchIdx, teamId, score)}
                   onUpdateName={(name) => updateTeamName(teamId, name)}
+                  onUpdateTeam={(newTeamId) => updateMatchParticipant('penyisihan', matchIdx, pIdx, newTeamId)}
                 />
               );
             })}
@@ -41,11 +43,11 @@ export default function Penyisihan() {
 
           {/* Live Scoreboard for this match */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {match.participants.map(teamId => {
+            {match.participants.map((teamId, pIdx) => {
               const team = data.teams.find(t => t.id === teamId) || { id: teamId, name: `Kelompok ${teamId}`, score: 0, matchScore: 0 };
               const matchScore = match.scores[teamId] || 0;
               return (
-                <div key={teamId} className="bg-blue-50 rounded-2xl p-6 text-center shadow-2xl border-4 border-blue-800 transform transition-transform hover:scale-105">
+                <div key={`${matchIdx}-${pIdx}`} className="bg-blue-50 rounded-2xl p-6 text-center shadow-2xl border-4 border-blue-800 transform transition-transform hover:scale-105">
                   <div className="text-blue-800 text-lg font-bold uppercase mb-2 tracking-widest truncate">{team.name}</div>
                   <div className="text-black font-black leading-none" style={{ fontSize: '48pt' }}>
                     {matchScore}

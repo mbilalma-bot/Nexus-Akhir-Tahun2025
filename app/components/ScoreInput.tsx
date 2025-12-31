@@ -3,12 +3,14 @@ import type { Team } from '../types';
 
 interface ScoreInputProps {
   team: Team;
+  allTeams?: Team[];
   onSave: (score: number) => void;
   onUpdateName: (name: string) => void;
+  onUpdateTeam?: (newTeamId: number) => void;
   variant?: 'blue' | 'green';
 }
 
-export function ScoreInput({ team, onSave, onUpdateName, variant = 'blue' }: ScoreInputProps) {
+export function ScoreInput({ team, allTeams, onSave, onUpdateName, onUpdateTeam, variant = 'blue' }: ScoreInputProps) {
   const [isEditingName, setIsEditingName] = useState(false);
   const [tempName, setTempName] = useState(team.name);
   const [inputVal, setInputVal] = useState('');
@@ -50,7 +52,22 @@ export function ScoreInput({ team, onSave, onUpdateName, variant = 'blue' }: Sco
   return (
     <div className={`bg-white p-3 rounded-lg shadow border ${theme.border} flex-1 min-w-[200px]`}>
       <div className="mb-2">
-        {isEditingName ? (
+        {isEditingName && onUpdateTeam && allTeams ? (
+          <select
+            className={`w-full border ${theme.borderFocus} rounded px-2 py-1 text-xs focus:ring-2 ${theme.ring} outline-none font-bold`}
+            value={team.id}
+            onChange={(e) => {
+              onUpdateTeam(Number(e.target.value));
+              setIsEditingName(false);
+            }}
+            onBlur={() => setIsEditingName(false)}
+            autoFocus
+          >
+            {allTeams.map(t => (
+              <option key={t.id} value={t.id}>{t.name}</option>
+            ))}
+          </select>
+        ) : isEditingName ? (
           <input
             type="text"
             className={`w-full border ${theme.borderFocus} rounded px-2 py-1 text-xs focus:ring-2 ${theme.ring} outline-none`}
@@ -66,7 +83,9 @@ export function ScoreInput({ team, onSave, onUpdateName, variant = 'blue' }: Sco
             onClick={() => setIsEditingName(true)}
           >
             <span className="truncate">{team.name}</span>
-            <span className={`text-[9px] ${theme.textLight} font-normal`}>Edit</span>
+            <span className={`text-[9px] ${theme.textLight} font-normal uppercase tracking-tighter`}>
+              {onUpdateTeam ? 'Ganti' : 'Edit'}
+            </span>
           </div>
         )}
       </div>

@@ -9,7 +9,7 @@ export function meta() {
 }
 
 export default function TelepatiGames() {
-  const { data, addScore, updateTeamName, resetMatchScore, resetData } = useTelepati();
+  const { data, addScore, updateTeamName, updateMatchParticipant, resetMatchScore, resetData } = useTelepati();
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
@@ -46,15 +46,17 @@ export default function TelepatiGames() {
 
             {/* Horizontal Inputs */}
             <div className="flex flex-col md:flex-row gap-4 mb-8">
-              {match.participants.map(teamId => {
+              {match.participants.map((teamId, pIdx) => {
                 const team = data.teams.find(t => t.id === teamId)!;
                 return (
                   <ScoreInput
-                    key={teamId}
+                    key={`${matchIdx}-${pIdx}`}
                     team={team}
+                    allTeams={data.teams}
                     variant="green"
                     onSave={(score) => addScore(matchIdx, teamId, score)}
                     onUpdateName={(name) => updateTeamName(teamId, name)}
+                    onUpdateTeam={(newTeamId) => updateMatchParticipant(matchIdx, pIdx, newTeamId)}
                   />
                 );
               })}
@@ -62,11 +64,11 @@ export default function TelepatiGames() {
 
             {/* Live Scoreboard for this match */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {match.participants.map(teamId => {
+              {match.participants.map((teamId, pIdx) => {
                 const team = data.teams.find(t => t.id === teamId)!;
                 const matchScore = match.scores[teamId] || 0;
                 return (
-                  <div key={teamId} className="bg-green-50 rounded-2xl p-8 text-center shadow-2xl border-4 border-green-800 transform transition-transform hover:scale-[1.02]">
+                  <div key={`${matchIdx}-${pIdx}`} className="bg-green-50 rounded-2xl p-8 text-center shadow-2xl border-4 border-green-800 transform transition-transform hover:scale-[1.02]">
                     <div className="text-green-800 text-lg font-bold uppercase mb-4 tracking-widest truncate">{team.name}</div>
                     <div className="text-black font-black leading-none" style={{ fontSize: '64pt' }}>
                       {matchScore}

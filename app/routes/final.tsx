@@ -3,7 +3,7 @@ import { useTournament } from "../hooks/useTournament";
 import { ScoreInput } from "../components/ScoreInput";
 
 export default function Final() {
-  const { data, addScore, updateTeamName, setupFinal, resetMatchScore } = useTournament();
+  const { data, addScore, updateTeamName, updateMatchParticipant, setupFinal, resetMatchScore } = useTournament();
   
   const finalMatch = data.matches.find(m => m.phase === 'final');
   const finalScores = finalMatch ? Object.values(finalMatch.scores) : [];
@@ -52,14 +52,16 @@ export default function Final() {
           </div>
 
           <div className="flex flex-col md:flex-row gap-6">
-            {finalMatch.participants.map(teamId => {
+            {finalMatch.participants.map((teamId, pIdx) => {
               const team = data.teams.find(t => t.id === teamId) || { id: teamId, name: `Kelompok ${teamId}`, score: 0, matchScore: 0 };
               return (
                 <ScoreInput
-                  key={teamId}
+                  key={`${pIdx}`}
                   team={team}
+                  allTeams={data.teams}
                   onSave={(score) => addScore('final', 0, teamId, score)}
                   onUpdateName={(name) => updateTeamName(teamId, name)}
+                  onUpdateTeam={(newTeamId) => updateMatchParticipant('final', 0, pIdx, newTeamId)}
                 />
               );
             })}

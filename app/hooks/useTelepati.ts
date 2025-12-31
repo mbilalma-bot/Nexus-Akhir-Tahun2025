@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import type { Team, Match, TournamentData } from '../types';
+import { useTeamMaster } from './useTeamMaster';
 
 const STORAGE_KEY = 'telepati_games_data';
 
-const initialTeams: Team[] = Array.from({ length: 8 }, (_, i) => ({
+const initialTeams: Team[] = Array.from({ length: 9 }, (_, i) => ({
   id: i + 1,
   name: `Kelompok ${i + 1}`,
   score: 0,
@@ -18,11 +19,23 @@ const initialMatches: Match[] = [
 ];
 
 export function useTelepati() {
+  const { teams: masterTeams } = useTeamMaster();
   const [data, setData] = useState<TournamentData>(() => {
     if (typeof window === 'undefined') return { teams: initialTeams, matches: initialMatches };
     const saved = localStorage.getItem(STORAGE_KEY);
     return saved ? JSON.parse(saved) : { teams: initialTeams, matches: initialMatches };
   });
+
+  // Sinkronisasi nama kelompok dari Master Data
+  useEffect(() => {
+    setData(prev => ({
+      ...prev,
+      teams: prev.teams.map(t => {
+        const masterTeam = masterTeams.find(mt => mt.id === t.id);
+        return masterTeam ? { ...t, name: masterTeam.name } : t;
+      })
+    }));
+  }, [masterTeams]);
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
@@ -60,83 +73,59 @@ export function useTelepati() {
         return { ...t, matchScore: totalMatchScore };
       });
 
-      // Hitung Poin Turnamen (10, 7.5, 5, 3) berdasarkan ranking matchScore
-      // Urutkan tim berdasarkan matchScore tertinggi
-      const sortedByScore = [...newTeams].sort((a, b) => (b.matchScore || 0) - (a.matchScore || 0));
-      
       const teamsWithPoints = newTeams.map(t => {
-        let tournamentPoints = 0;
-        const rank = sortedByScore.findIndex(s => s.id === t.id) + 1;
-        const hasScore = (t.matchScore || 0) > 0;
-
-        if (hasScore) {
-          if (rank === 1) tournamentPoints = 10;
-          else if (rank === 2) tournamentPoints = 7.5;
-          else if (rank === 3) tournamentPoints = 5;
-          else tournamentPoints = 3;
-        } else {
-          // Jika belum ada skor, poin tetap 0 atau 3? 
-          // Di useRankedGame defaultnya 3. Kita ikuti saja agar konsisten jika sudah mulai input.
-          // Tapi kalau benar-benar 0 skornya (belum main), mungkin lebih baik 0.
-          tournamentPoints = 0;
-        }
-
-        return { ...t, score: tournamentPoints };
+        // Gunakan matchScore sebagai score (poin murni)
+        return { ...t, score: t.matchScore || 0 };
       });
 
       return { ...prev, matches: newMatches, teams: teamsWithPoints };
     });
   };
 
-  const resetMatchScore = (matchIndex: number) => {
-    if (!confirm('Reset skor untuk pertandingan ini?')) return;
-    
+  const resetMatchScore = (matchIdx: number) => {
     setData((prev) => {
       const newMatches = prev.matches.map((match, idx) => {
-        if (idx === matchIndex) {
-          const resetScores = { ...match.scores };
-          match.participants.forEach(id => {
-            resetScores[id] = 0;
-          });
-          return {
-            ...match,
-            scores: resetScores
-          };
+        if (idx === matchIdx) {
+          return { ...match, scores: {} };
         }
         return match;
       });
 
-      const newTeams = prev.teams.map(t => {
+      // Recalculate total scores for all teams
+      const newTeams = prev.teams.map(team => {
         let totalMatchScore = 0;
         newMatches.forEach(m => {
-          if (m.scores[t.id] !== undefined) {
-            totalMatchScore += m.scores[t.id];
+          if (m.participants.includes(team.id)) {
+            totalMatchScore += m.scores[team.id] || 0;
           }
         });
-        return { ...t, matchScore: totalMatchScore };
+        return { ...team, matchScore: totalMatchScore, score: totalMatchScore };
       });
 
-      // Hitung Poin Turnamen (10, 7.5, 5, 3) berdasarkan ranking matchScore
-      const sortedByScore = [...newTeams].sort((a, b) => (b.matchScore || 0) - (a.matchScore || 0));
-      
-      const teamsWithPoints = newTeams.map(t => {
-        let tournamentPoints = 0;
-        const rank = sortedByScore.findIndex(s => s.id === t.id) + 1;
-        const hasScore = (t.matchScore || 0) > 0;
+      return { ...prev, matches: newMatches, teams: newTeams };
+    });
+  };
 
-        if (hasScore) {
-          if (rank === 1) tournamentPoints = 10;
-          else if (rank === 2) tournamentPoints = 7.5;
-          else if (rank === 3) tournamentPoints = 5;
-          else tournamentPoints = 3;
-        } else {
-          tournamentPoints = 0;
+  const updateMatchParticipant = (matchIndex: number, participantIndex: number, newTeamId: number) => {
+    setData((prev) => {
+      const newMatches = prev.matches.map((match, idx) => {
+        if (idx === matchIndex) {
+          const oldTeamId = match.participants[participantIndex];
+          const newParticipants = [...match.participants];
+          newParticipants[participantIndex] = newTeamId;
+
+          const newScores = { ...match.scores };
+          if (oldTeamId !== newTeamId) {
+            newScores[newTeamId] = newScores[oldTeamId] || 0;
+            if (!newParticipants.includes(oldTeamId)) {
+              delete newScores[oldTeamId];
+            }
+          }
+          return { ...match, participants: newParticipants, scores: newScores };
         }
-
-        return { ...t, score: tournamentPoints };
+        return match;
       });
-
-      return { ...prev, matches: newMatches, teams: teamsWithPoints };
+      return { ...prev, matches: newMatches };
     });
   };
 
@@ -153,6 +142,7 @@ export function useTelepati() {
     updateTeamName,
     addScore,
     resetMatchScore,
+    updateMatchParticipant,
     resetData
   };
 }
