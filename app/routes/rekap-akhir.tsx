@@ -25,7 +25,7 @@ export default function RekapAkhir() {
 
   useEffect(() => {
     const puzzleData: TournamentData = JSON.parse(localStorage.getItem('tournament_data') || '{"teams": []}');
-    const telepatiData: TournamentData = JSON.parse(localStorage.getItem('telepati_games_data') || '{"teams": []}');
+    const telepatiData: TournamentData = JSON.parse(localStorage.getItem('telepati_games_data_v2') || '{"teams": []}');
     const colorData: TournamentData = JSON.parse(localStorage.getItem('color_battle_data') || '{"teams": []}');
     const berantaiData: TournamentData = JSON.parse(localStorage.getItem('games_berantai_data') || '{"teams": []}');
 
