@@ -166,6 +166,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
         <footer className="bg-white border-t border-gray-200 py-6 text-center text-gray-500 text-sm">
           <p>© 2025 MM Desa Cicalengka - Tournament Management System</p>
+          <p className="text-[10px] mt-1 text-gray-400">Build: 2026.01.01.v2</p>
         </footer>
 
         <ScrollRestoration />

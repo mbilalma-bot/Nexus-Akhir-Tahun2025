@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import type { Team, Match, TournamentData } from '../types';
 import { useTeamMaster } from './useTeamMaster';
 
-const STORAGE_KEY = 'telepati_games_data';
+const STORAGE_KEY = 'telepati_games_data_v2'; // Changed key to v2 to force refresh
 
 const initialTeams: Team[] = Array.from({ length: 9 }, (_, i) => ({
   id: i + 1,
@@ -26,15 +26,32 @@ export function useTelepati() {
     return saved ? JSON.parse(saved) : { teams: initialTeams, matches: initialMatches };
   });
 
-  // Sinkronisasi nama kelompok dari Master Data
+  // Sinkronisasi nama kelompok dari Master Data dan pastikan poin murni
   useEffect(() => {
-    setData(prev => ({
-      ...prev,
-      teams: prev.teams.map(t => {
+    setData(prev => {
+      let hasChanges = false;
+      const syncedTeams = prev.teams.map(t => {
         const masterTeam = masterTeams.find(mt => mt.id === t.id);
-        return masterTeam ? { ...t, name: masterTeam.name } : t;
-      })
-    }));
+        const name = masterTeam ? masterTeam.name : t.name;
+        
+        let totalMatchScore = 0;
+        prev.matches.forEach(m => {
+          if (m.scores[t.id] !== undefined) {
+            totalMatchScore += m.scores[t.id];
+          }
+        });
+
+        const newScore = totalMatchScore;
+        if (t.name !== name || t.matchScore !== totalMatchScore || t.score !== newScore) {
+          hasChanges = true;
+          return { ...t, name, matchScore: totalMatchScore, score: newScore };
+        }
+        return t;
+      });
+
+      if (!hasChanges) return prev;
+      return { ...prev, teams: syncedTeams };
+    });
   }, [masterTeams]);
 
   useEffect(() => {

@@ -92,14 +92,30 @@ export default function TelepatiGames() {
         ))}
       </div>
       
-      <div className="mt-20 p-8 bg-green-50 rounded-3xl border-2 border-green-100 text-center">
-        <p className="text-green-800 font-bold mb-4">Butuh memulai ulang semua data Telepati Games?</p>
-        <button 
-          onClick={resetData}
-          className="bg-red-100 hover:bg-red-200 text-red-600 px-6 py-2 rounded-xl font-bold transition-colors border border-red-200"
-        >
-          Reset Seluruh Data Games
-        </button>
+      <div className="mt-20 p-8 bg-green-50 rounded-3xl border-2 border-green-100 text-center space-y-4">
+        <div>
+          <p className="text-green-800 font-bold mb-2">Butuh memulai ulang semua data Telepati Games?</p>
+          <button 
+            onClick={resetData}
+            className="bg-red-100 hover:bg-red-200 text-red-600 px-6 py-2 rounded-xl font-bold transition-colors border border-red-200"
+          >
+            Reset Seluruh Data Games
+          </button>
+        </div>
+        
+        <div className="pt-4 border-t border-green-200">
+          <p className="text-green-600 text-sm font-medium mb-2">Mengalami masalah tampilan tidak sesuai? Coba bersihkan cache aplikasi.</p>
+          <button 
+            onClick={() => {
+              if (confirm('Aplikasi akan memuat ulang dan mencoba memperbaiki masalah tampilan. Data Anda tetap aman. Lanjutkan?')) {
+                window.location.reload();
+              }
+            }}
+            className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-xl font-bold transition-colors shadow-md"
+          >
+            Refresh & Perbaiki Tampilan
+          </button>
+        </div>
       </div>
     </div>
   );
